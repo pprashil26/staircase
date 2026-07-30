@@ -15,7 +15,6 @@
       --line-dark: #d4d4d8;
       --black: #18181b;
       --shadow: 0 1px 2px rgba(0,0,0,.04);
-      --radius: 12px;
       --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
@@ -61,7 +60,6 @@
     .toolbar,
     .filters,
     .task-actions,
-    .row,
     .phase-head {
       display: flex;
       align-items: center;
@@ -271,17 +269,11 @@
       align-items: start;
     }
 
-    .done-btn {
-      width: 22px;
-      height: 22px;
-      border-radius: 999px;
-      padding: 0;
-      box-shadow: none;
-      color: var(--muted);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
+    .done-check {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      cursor: pointer;
     }
 
     .task-title-row {
@@ -331,9 +323,14 @@
     }
 
     .task-actions button {
-      padding: 5px 8px;
+      width: 28px;
+      height: 28px;
+      padding: 0;
       box-shadow: none;
-      font-size: 12px;
+      font-size: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .empty {
@@ -430,7 +427,8 @@
       <div class="filters">
         <button id="allBtn" type="button">All</button>
         <label class="check-label">
-          <input id="showDoneInput" type="checkbox" checked /> Done
+          <input id="showDoneInput" type="checkbox" checked />
+          Done
         </label>
       </div>
     </section>
@@ -578,11 +576,12 @@
 
       taskList.innerHTML = visible.map(task => {
         const p = phaseMeta(task.phase);
+        const checked = task.done ? 'checked' : '';
 
         return `
           <article class="task ${task.done ? 'done' : ''}" data-id="${task.id}">
             <div class="task-main">
-              toggle${task.done ? '✓' : '○'}</button>
+              toggle
 
               <div>
                 <div class="task-title-row">
@@ -594,9 +593,9 @@
               </div>
 
               <div class="task-actions">
-                prev‹</button>
-                next›</button>
-                delete×</button>
+                prev&lsaquo;</button>
+                next&rsaquo;</button>
+                delete&times;</button>
               </div>
             </div>
           </article>
@@ -685,10 +684,6 @@
 
       const action = actionEl.dataset.action;
 
-      if (action === 'toggle') {
-        updateTask(id, { done: !task.done });
-      }
-
       if (action === 'prev') {
         updateTask(id, { phase: prevPhase(task.phase) });
       }
@@ -704,6 +699,21 @@
       }
     });
 
+    taskList.addEventListener('change', event => {
+      const input = event.target;
+      const taskEl = input.closest('[data-id]');
+
+      if (!taskEl) {
+        return;
+      }
+
+      const id = taskEl.dataset.id;
+
+      if (input.dataset.action === 'toggle') {
+        updateTask(id, { done: input.checked });
+      }
+    });
+
     taskList.addEventListener('input', event => {
       const input = event.target;
       const taskEl = input.closest('[data-id]');
@@ -715,13 +725,29 @@
       const id = taskEl.dataset.id;
 
       if (input.dataset.action === 'title') {
-        updateTask(id, { title: input.value });
+        const task = tasks.find(t => t.id === id);
+        if (task) {
+          task.title = input.value;
+          save();
+        }
       }
 
       if (input.dataset.action === 'note') {
-        updateTask(id, { note: input.value });
+        const task = tasks.find(t => t.id === id);
+        if (task) {
+          task.note = input.value;
+          save();
+        }
       }
     });
+
+    taskList.addEventListener('blur', event => {
+      const input = event.target;
+
+      if (input.dataset.action === 'title' || input.dataset.action === 'note') {
+        render();
+      }
+    }, true);
 
     exportBtn.addEventListener('click', () => {
       const payload = {

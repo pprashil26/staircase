@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>STAIRCASE</title>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --panel: #ffffff;
+      --text: #18181b;
+      --muted: #71717a;
+      --line: #e4e4e7;
+      --line-dark: #d4d4d8;
+      --black: #18181b;
+      --shadow: 0 1px 2px rgba(0,0,0,.04);
+      --radius: 12px;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+    }
+
+    .wrap {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 12px;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+
+    .sub {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .toolbar,
+    .filters,
+    .task-actions,
+    .row,
+    .phase-head {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button,
+    .file-label,
+    select,
+    input {
+      font: inherit;
+    }
+
+    button,
+    .file-label {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 9px;
+      padding: 6px 9px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    button:hover,
+    .file-label:hover {
+      background: #f4f4f5;
+    }
+
+    .primary {
+      background: var(--black);
+      color: white;
+      border-color: var(--black);
+    }
+
+    .primary:hover { background: #3f3f46; }
+
+    .danger:hover {
+      color: #dc2626;
+      border-color: #fecaca;
+      background: #fef2f2;
+    }
+
+    .phases {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .phase-card {
+      text-align: left;
+      padding: 8px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      box-shadow: none;
+      min-width: 0;
+    }
+
+    .phase-card.active {
+      outline: 2px solid #71717a;
+      outline-offset: 1px;
+    }
+
+    .phase-short {
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .count {
+      margin-left: auto;
+      background: rgba(255,255,255,.75);
+      border-radius: 999px;
+      padding: 2px 6px;
+      font-size: 10px;
+    }
+
+    .phase-label {
+      margin-top: 3px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 11px;
+    }
+
+    .registration { background: #f1f5f9; color: #334155; border-color: #e2e8f0; }
+    .collection { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .analysis { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+    .solutions { background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; }
+    .execution { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 8px;
+      box-shadow: var(--shadow);
+      margin-bottom: 10px;
+    }
+
+    .add-grid {
+      display: grid;
+      grid-template-columns: 1fr 140px auto;
+      gap: 8px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 8px 10px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--line-dark);
+      box-shadow: 0 0 0 2px #e4e4e7;
+    }
+
+    #noteInput {
+      margin-top: 8px;
+      font-size: 12px;
+    }
+
+    .search-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .search-box {
+      flex: 1;
+      position: relative;
+    }
+
+    .search-box span {
+      position: absolute;
+      left: 9px;
+      top: 8px;
+      color: #a1a1aa;
+      font-size: 13px;
+    }
+
+    #searchInput { padding-left: 28px; }
+
+    .filters { font-size: 12px; color: var(--muted); }
+
+    .check-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 9px;
+      padding: 5px 8px;
+      white-space: nowrap;
+    }
+
+    .check-label input { width: auto; margin: 0; }
+
+    .task-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .task {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .task.done { opacity: .55; }
+
+    .task-main {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      align-items: start;
+    }
+
+    .done-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      padding: 0;
+      box-shadow: none;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .task-title-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .tag {
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.2;
+      flex: 0 0 auto;
+    }
+
+    .task-title {
+      border: 0;
+      padding: 0;
+      border-radius: 0;
+      font-weight: 600;
+      min-width: 120px;
+      background: transparent;
+    }
+
+    .task-title:focus,
+    .task-note:focus {
+      box-shadow: none;
+      border-color: transparent;
+    }
+
+    .task.done .task-title { text-decoration: line-through; }
+
+    .task-note {
+      margin-top: 5px;
+      border: 0;
+      padding: 0;
+      border-radius: 0;
+      font-size: 12px;
+      color: var(--muted);
+      background: transparent;
+    }
+
+    .task-actions button {
+      padding: 5px 8px;
+      box-shadow: none;
+      font-size: 12px;
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--line-dark);
+      border-radius: 16px;
+      background: white;
+      padding: 28px 8px;
+    }
+
+    footer {
+      text-align: center;
+      color: #a1a1aa;
+      font-size: 11px;
+      margin-top: 14px;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 640px) {
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .toolbar { flex-wrap: wrap; }
+      .phase-label { display: none; }
+      .phase-card { padding: 7px; }
+      .add-grid { grid-template-columns: 1fr; }
+      .search-row { flex-direction: column; align-items: stretch; }
+      .filters { justify-content: space-between; }
+      .task-main { grid-template-columns: auto 1fr; }
+      .task-actions { grid-column: 2; justify-content: flex-end; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>STAIRCASE</h1>
+        <div class="sub">Minimal GTD-inspired task lifecycle: RCASE</div>
+      </div>
+      <div class="toolbar">
+        <button id="exportBtn" type="button">Export</button>
+        <label class="file-label" for="importFile">Import</label>
+        <input id="importFile" class="hidden" type="file" accept="application/json" />
+        <button id="resetBtn" type="button">Reset</button>
+      </div>
+    </header>
+
+    <section id="phaseBar" class="phases" aria-label="Lifecycle phase filters"></section>
+
+    <form id="addForm" class="panel">
+      <div class="add-grid">
+        <input id="titleInput" autocomplete="off" placeholder="Add task, idea, promise, issue..." />
+        <select id="phaseInput"></select>
+        <button class="primary" type="submit">Add</button>
+      </div>
+      <input id="noteInput" autocomplete="off" placeholder="Optional note, next action, context, waiting-for detail..." />
+    </form>
+
+    <section class="search-row">
+      <div class="search-box">
+        <span>⌕</span>
+        <input id="searchInput" autocomplete="off" placeholder="Search" />
+      </div>
+      <div class="filters">
+        <button id="allBtn" type="button">All</button>
+        <label class="check-label">
+          <input id="showDoneInput" type="checkbox" checked /> Done
+        </label>
+      </div>
+    </section>
+
+    <main id="taskList" class="task-list"></main>
+
+    <footer>Registration → Collection → Analysis → Solutions → Execution</footer>
+  </div>
+
+  <script>
+    const PHASES = [
+      { key: 'registration', short: 'R', label: 'Registration' },
+      { key: 'collection', short: 'C', label: 'Collection' },
+      { key: 'analysis', short: 'A', label: 'Analysis' },
+      { key: 'solutions', short: 'S', label: 'Solutions' },
+      { key: 'execution', short: 'E', label: 'Execution' }
+    ];
+
+    const STORAGE_KEY = 'staircase-rcase-v1';
+
+    let tasks = [];
+    let filter = 'all';
+    let showDone = true;
+    let query = '';
+
+    const phaseBar = document.getElementById('phaseBar');
+    const addForm = document.getElementById('addForm');
+    const titleInput = document.getElementById('titleInput');
+    const noteInput = document.getElementById('noteInput');
+    const phaseInput = document.getElementById('phaseInput');
+    const searchInput = document.getElementById('searchInput');
+    const showDoneInput = document.getElementById('showDoneInput');
+    const taskList = document.getElementById('taskList');
+    const allBtn = document.getElementById('allBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const importFile = document.getElementById('importFile');
+    const resetBtn = document.getElementById('resetBtn');
+
+    function uid() {
+      return Date.now() + '-' + Math.random().toString(16).slice(2);
+    }
+
+    function sampleTasks() {
+      const now = new Date().toISOString();
+      return [
+        {
+          id: uid(),
+          title: 'Capture all audit evidence requests in one place',
+          note: 'Example task. Move it through RCASE as clarity improves.',
+          phase: 'registration',
+          done: false,
+          createdAt: now
+        },
+        {
+          id: uid(),
+          title: 'Clarify next action for weekly review checklist',
+          note: '',
+          phase: 'analysis',
+          done: false,
+          createdAt: now
+        }
+      ];
+    }
+
+    function phaseMeta(key) {
+      return PHASES.find(p => p.key === key) || PHASES[0];
+    }
+
+    function phaseIndex(key) {
+      const index = PHASES.findIndex(p => p.key === key);
+      return index < 0 ? 0 : index;
+    }
+
+    function nextPhase(key) {
+      return PHASES[Math.min(phaseIndex(key) + 1, PHASES.length - 1)].key;
+    }
+
+    function prevPhase(key) {
+      return PHASES[Math.max(phaseIndex(key) - 1, 0)].key;
+    }
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }
+
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        tasks = raw ? JSON.parse(raw) : sampleTasks();
+      } catch (err) {
+        tasks = sampleTasks();
+      }
+      save();
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function renderPhaseOptions() {
+      phaseInput.innerHTML = PHASES.map(p =>
+        `<option value="${p.key}">${p.short} - ${p.label}</option>`
+      ).join('');
+    }
+
+    function renderPhases() {
+      const counts = {};
+      PHASES.forEach(p => {
+        counts[p.key] = tasks.filter(t => t.phase === p.key && !t.done).length;
+      });
+
+      phaseBar.innerHTML = PHASES.map(p => `
+        <button type="button" class="phase-card ${p.key} ${filter === p.key ? 'active' : ''}" data-phase="${p.key}" title="${p.label}">
+          <div class="phase-head">
+            <span class="phase-short">${p.short}</span>
+            <span class="count">${counts[p.key] || 0}</span>
+          </div>
+          <div class="phase-label">${p.label}</div>
+        </button>
+      `).join('');
+    }
+
+    function getVisibleTasks() {
+      const q = query.trim().toLowerCase();
+      return tasks
+        .filter(t => showDone || !t.done)
+        .filter(t => filter === 'all' || t.phase === filter)
+        .filter(t => !q || `${t.title} ${t.note || ''}`.toLowerCase().includes(q))
+        .sort((a, b) => Number(a.done) - Number(b.done) || new Date(b.createdAt) - new Date(a.createdAt));
+    }
+
+    function renderTasks() {
+      const visible = getVisibleTasks();
+      allBtn.classList.toggle('primary', filter === 'all');
+
+      if (!visible.length) {
+        taskList.innerHTML = '<div class="empty">No tasks found. Capture one item and move it through RCASE.</div>';
+        return;
+      }
+
+      taskList.innerHTML = visible.map(task => {
+        const p = phaseMeta(task.phase);
+        return `
+          <article class="task ${task.done ? 'done' : ''}" data-id="${task.id}">
+            <div class="task-main">
+              <button type="button" class="done-btn" data-action="toggle" title="Mark done">${task.done ? '✓' : '○'}</button>
+              <div>
+                <div class="task-title-row">
+                  <span class="tag ${p.key}" title="${p.label}">${p.short}</span>
+                  <input class="task-title" data-action="title" value="${escapeHtml(task.title)}" />
+                </div>
+                <input class="task-note" data-action="note" placeholder="Note" value="${escapeHtml(task.note || '')}" />
+              </div>
+              <div class="task-actions">
+                <button type="button" data-action="prev" title="Previous phase">‹</button>
+                <button type="button" data-action="next" title="Next phase">›</button>
+                <button type="button" class="danger" data-action="delete" title="Delete">×</button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function render() {
+      renderPhases();
+      renderTasks();
+    }
+
+    function updateTask(id, patch) {
+      tasks = tasks.map(t => t.id === id ? { ...t, ...patch } : t);
+      save();
+      render();
+    }
+
+    addForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const title = titleInput.value.trim();
+      if (!title) return;
+
+      tasks = [{
+        id: uid(),
+        title,
+        note: noteInput.value.trim(),
+        phase: phaseInput.value,
+        done: false,
+        createdAt: new Date().toISOString()
+      }, ...tasks];
+
+      titleInput.value = '';
+      noteInput.value = '';
+      phaseInput.value = 'registration';
+      save();
+      render();
+      titleInput.focus();
+    });
+
+    phaseBar.addEventListener('click', event => {
+      const btn = event.target.closest('[data-phase]');
+      if (!btn) return;
+      const selected = btn.dataset.phase;
+      filter = filter === selected ? 'all' : selected;
+      render();
+    });
+
+    allBtn.addEventListener('click', () => {
+      filter = 'all';
+      render();
+    });
+
+    searchInput.addEventListener('input', () => {
+      query = searchInput.value;
+      renderTasks();
+    });
+
+    showDoneInput.addEventListener('change', () => {
+      showDone = showDoneInput.checked;
+      renderTasks();
+    });
+
+    taskList.addEventListener('click', event => {
+      const actionEl = event.target.closest('[data-action]');
+      const taskEl = event.target.closest('[data-id]');
+      if (!actionEl || !taskEl) return;
+
+      const id = taskEl.dataset.id;
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+
+      const action = actionEl.dataset.action;
+      if (action === 'toggle') updateTask(id, { done: !task.done });
+      if (action === 'prev') updateTask(id, { phase: prevPhase(task.phase) });
+      if (action === 'next') updateTask(id, { phase: nextPhase(task.phase) });
+      if (action === 'delete') {
+        tasks = tasks.filter(t => t.id !== id);
+        save();
+        render();
+      }
+    });
+
+    taskList.addEventListener('input', event => {
+      const input = event.target;
+      const taskEl = input.closest('[data-id]');
+      if (!taskEl) return;
+
+      const id = taskEl.dataset.id;
+      if (input.dataset.action === 'title') updateTask(id, { title: input.value });
+      if (input.dataset.action === 'note') updateTask(id, { note: input.value });
+    });
+
+    exportBtn.addEventListener('click', () => {
+      const payload = {
+        app: 'STAIRCASE',
+        version: '1.0',
+        exportedAt: new Date().toISOString(),
+        tasks
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'staircase-backup.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    importFile.addEventListener('change', event => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(String(reader.result));
+          const incoming = Array.isArray(parsed) ? parsed : parsed.tasks;
+          if (!Array.isArray(incoming)) throw new Error('Invalid file');
+
+          tasks = incoming.map(t => ({
+            id: t.id || uid(),
+            title: t.title || '',
+            note: t.note || '',
+            phase: phaseMeta(t.phase).key,
+            done: Boolean(t.done),
+            createdAt: t.createdAt || new Date().toISOString()
+          }));
+
+          save();
+          render();
+        } catch (err) {
+          alert('Import failed. Please select a valid STAIRCASE backup JSON file.');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    });
+
+    resetBtn.addEventListener('click', () => {
+      if (!confirm('Reset to sample tasks? This will replace current local data.')) return;
+      tasks = sampleTasks();
+      filter = 'all';
+      query = '';
+      showDone = true;
+      searchInput.value = '';
+      showDoneInput.checked = true;
+      save();
+      render();
+    });
+
+    renderPhaseOptions();
+    load();
+    render();
+  </script>
+</body>
+</html>

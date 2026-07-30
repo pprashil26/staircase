@@ -20,6 +20,7 @@
     .toolbar,.filters,.task-actions,.phase-head{display:flex;align-items:center;gap:6px}
     button,.file-label,select,input{font:inherit}
     button,.file-label{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:9px;padding:6px 9px;cursor:pointer;box-shadow:var(--shadow);line-height:1;white-space:nowrap;text-decoration:none}
+    #addTaskBtn{padding:10px 18px;font-weight:700;border-radius:12px;min-width:110px}
     button:hover,.file-label:hover{background:#f4f4f5}
     .primary{background:var(--black);color:#fff;border-color:var(--black)}
     .primary:hover{background:#3f3f46}
@@ -36,7 +37,7 @@
     .solutions{background:#faf5ff;color:#7e22ce;border-color:#e9d5ff}
     .execution{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
     .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:8px;box-shadow:var(--shadow);margin-bottom:10px}
-    .add-grid{display:grid;grid-template-columns:1fr 140px auto;gap:8px}
+    .add-grid{display:grid;grid-template-columns:1fr auto;gap:8px}
     input,select{width:100%;border:1px solid var(--line);border-radius:11px;padding:8px 10px;background:#fff;color:var(--text);outline:none}
     input:focus,select:focus{border-color:var(--line-dark);box-shadow:0 0 0 2px #e4e4e7}
     #noteInput{margin-top:8px;font-size:12px}
@@ -84,8 +85,7 @@
     <form id="addForm" class="panel">
       <div class="add-grid">
         <input id="titleInput" autocomplete="off" placeholder="Add task, idea, promise, issue...">
-        <select id="phaseInput"></select>
-        <button class="primary" type="submit">Add</button>
+        <button id="addTaskBtn" class="primary" type="submit">Add task</button>
       </div>
       <input id="noteInput" autocomplete="off" placeholder="Optional note, next action, context, waiting-for detail...">
     </form>
@@ -118,7 +118,6 @@
     const addForm = document.getElementById('addForm');
     const titleInput = document.getElementById('titleInput');
     const noteInput = document.getElementById('noteInput');
-    const phaseInput = document.getElementById('phaseInput');
     const showDoneInput = document.getElementById('showDoneInput');
     const taskList = document.getElementById('taskList');
     const allBtn = document.getElementById('allBtn');
@@ -146,9 +145,6 @@
       try { tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || sampleTasks(); }
       catch { tasks = sampleTasks(); }
       save();
-    }
-    function renderPhaseOptions(){
-      phaseInput.innerHTML = PHASES.map(p => '<option value="' + p.key + '">' + p.short + ' - ' + p.label + '</option>').join('');
     }
     function renderPhases(){
       phaseBar.innerHTML = PHASES.map(p => {
@@ -183,8 +179,8 @@
       e.preventDefault();
       const title = titleInput.value.trim();
       if (!title) return;
-      tasks = [{ id:uid(), title:title, note:noteInput.value.trim(), phase:phaseInput.value, done:false, createdAt:new Date().toISOString() }, ...tasks];
-      titleInput.value = ''; noteInput.value = ''; phaseInput.value = 'registration'; save(); render(); titleInput.focus();
+      tasks = [{ id:uid(), title:title, note:noteInput.value.trim(), phase:'registration', done:false, createdAt:new Date().toISOString() }, ...tasks];
+      titleInput.value = ''; noteInput.value = ''; save(); render(); titleInput.focus();
     });
     phaseBar.addEventListener('click', e => {
       const btn = e.target.closest('[data-phasekey]');
@@ -219,7 +215,7 @@
       save();
     });
     exportBtn.addEventListener('click', () => {
-      const payload = { app:'STAIRCASE', version:'1.1', exportedAt:new Date().toISOString(), tasks:tasks };
+      const payload = { app:'STAIRCASE', version:'1.2', exportedAt:new Date().toISOString(), tasks:tasks };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = 'staircase-backup.json'; a.click(); URL.revokeObjectURL(url);
@@ -243,7 +239,7 @@
       tasks = sampleTasks(); filter = 'all'; showDone = true; showDoneInput.checked = true; save(); render();
     });
 
-    renderPhaseOptions(); load(); render();
+    load(); render();
   </script>
 </body>
 </html>

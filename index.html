@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>STAIRCASE</title>
+
   <style>
     :root {
       --bg: #fafafa;
@@ -18,7 +19,9 @@
       --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -96,7 +99,9 @@
       border-color: var(--black);
     }
 
-    .primary:hover { background: #3f3f46; }
+    .primary:hover {
+      background: #3f3f46;
+    }
 
     .danger:hover {
       color: #dc2626;
@@ -146,11 +151,35 @@
       font-size: 11px;
     }
 
-    .registration { background: #f1f5f9; color: #334155; border-color: #e2e8f0; }
-    .collection { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
-    .analysis { background: #fffbeb; color: #b45309; border-color: #fde68a; }
-    .solutions { background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; }
-    .execution { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+    .registration {
+      background: #f1f5f9;
+      color: #334155;
+      border-color: #e2e8f0;
+    }
+
+    .collection {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #bfdbfe;
+    }
+
+    .analysis {
+      background: #fffbeb;
+      color: #b45309;
+      border-color: #fde68a;
+    }
+
+    .solutions {
+      background: #faf5ff;
+      color: #7e22ce;
+      border-color: #e9d5ff;
+    }
+
+    .execution {
+      background: #f0fdf4;
+      color: #15803d;
+      border-color: #bbf7d0;
+    }
 
     .panel {
       background: var(--panel);
@@ -189,30 +218,18 @@
       font-size: 12px;
     }
 
-    .search-row {
+    .controls-row {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       gap: 8px;
       margin-bottom: 8px;
     }
 
-    .search-box {
-      flex: 1;
-      position: relative;
+    .filters {
+      font-size: 12px;
+      color: var(--muted);
     }
-
-    .search-box span {
-      position: absolute;
-      left: 9px;
-      top: 8px;
-      color: #a1a1aa;
-      font-size: 13px;
-    }
-
-    #searchInput { padding-left: 28px; }
-
-    .filters { font-size: 12px; color: var(--muted); }
 
     .check-label {
       display: flex;
@@ -225,7 +242,10 @@
       white-space: nowrap;
     }
 
-    .check-label input { width: auto; margin: 0; }
+    .check-label input {
+      width: auto;
+      margin: 0;
+    }
 
     .task-list {
       display: grid;
@@ -240,7 +260,9 @@
       box-shadow: var(--shadow);
     }
 
-    .task.done { opacity: .55; }
+    .task.done {
+      opacity: .55;
+    }
 
     .task-main {
       display: grid;
@@ -294,7 +316,9 @@
       border-color: transparent;
     }
 
-    .task.done .task-title { text-decoration: line-through; }
+    .task.done .task-title {
+      text-decoration: line-through;
+    }
 
     .task-note {
       margin-top: 5px;
@@ -328,7 +352,9 @@
       margin-top: 14px;
     }
 
-    .hidden { display: none !important; }
+    .hidden {
+      display: none !important;
+    }
 
     @media (max-width: 640px) {
       header {
@@ -336,17 +362,43 @@
         flex-direction: column;
       }
 
-      .toolbar { flex-wrap: wrap; }
-      .phase-label { display: none; }
-      .phase-card { padding: 7px; }
-      .add-grid { grid-template-columns: 1fr; }
-      .search-row { flex-direction: column; align-items: stretch; }
-      .filters { justify-content: space-between; }
-      .task-main { grid-template-columns: auto 1fr; }
-      .task-actions { grid-column: 2; justify-content: flex-end; }
+      .toolbar {
+        flex-wrap: wrap;
+      }
+
+      .phase-label {
+        display: none;
+      }
+
+      .phase-card {
+        padding: 7px;
+      }
+
+      .add-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .controls-row {
+        justify-content: flex-start;
+      }
+
+      .filters {
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .task-main {
+        grid-template-columns: auto 1fr;
+      }
+
+      .task-actions {
+        grid-column: 2;
+        justify-content: flex-end;
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <header>
@@ -354,6 +406,7 @@
         <h1>STAIRCASE</h1>
         <div class="sub">Minimal GTD-inspired task lifecycle: RCASE</div>
       </div>
+
       <div class="toolbar">
         <button id="exportBtn" type="button">Export</button>
         <label class="file-label" for="importFile">Import</label>
@@ -373,11 +426,7 @@
       <input id="noteInput" autocomplete="off" placeholder="Optional note, next action, context, waiting-for detail..." />
     </form>
 
-    <section class="search-row">
-      <div class="search-box">
-        <span>⌕</span>
-        <input id="searchInput" autocomplete="off" placeholder="Search" />
-      </div>
+    <section class="controls-row">
       <div class="filters">
         <button id="allBtn" type="button">All</button>
         <label class="check-label">
@@ -405,14 +454,12 @@
     let tasks = [];
     let filter = 'all';
     let showDone = true;
-    let query = '';
 
     const phaseBar = document.getElementById('phaseBar');
     const addForm = document.getElementById('addForm');
     const titleInput = document.getElementById('titleInput');
     const noteInput = document.getElementById('noteInput');
     const phaseInput = document.getElementById('phaseInput');
-    const searchInput = document.getElementById('searchInput');
     const showDoneInput = document.getElementById('showDoneInput');
     const taskList = document.getElementById('taskList');
     const allBtn = document.getElementById('allBtn');
@@ -426,6 +473,7 @@
 
     function sampleTasks() {
       const now = new Date().toISOString();
+
       return [
         {
           id: uid(),
@@ -474,6 +522,7 @@
       } catch (err) {
         tasks = sampleTasks();
       }
+
       save();
     }
 
@@ -494,6 +543,7 @@
 
     function renderPhases() {
       const counts = {};
+
       PHASES.forEach(p => {
         counts[p.key] = tasks.filter(t => t.phase === p.key && !t.done).length;
       });
@@ -510,16 +560,15 @@
     }
 
     function getVisibleTasks() {
-      const q = query.trim().toLowerCase();
       return tasks
         .filter(t => showDone || !t.done)
         .filter(t => filter === 'all' || t.phase === filter)
-        .filter(t => !q || `${t.title} ${t.note || ''}`.toLowerCase().includes(q))
         .sort((a, b) => Number(a.done) - Number(b.done) || new Date(b.createdAt) - new Date(a.createdAt));
     }
 
     function renderTasks() {
       const visible = getVisibleTasks();
+
       allBtn.classList.toggle('primary', filter === 'all');
 
       if (!visible.length) {
@@ -529,21 +578,25 @@
 
       taskList.innerHTML = visible.map(task => {
         const p = phaseMeta(task.phase);
+
         return `
           <article class="task ${task.done ? 'done' : ''}" data-id="${task.id}">
             <div class="task-main">
-              <button type="button" class="done-btn" data-action="toggle" title="Mark done">${task.done ? '✓' : '○'}</button>
+              toggle${task.done ? '✓' : '○'}</button>
+
               <div>
                 <div class="task-title-row">
                   <span class="tag ${p.key}" title="${p.label}">${p.short}</span>
-                  <input class="task-title" data-action="title" value="${escapeHtml(task.title)}" />
+                  title
                 </div>
-                <input class="task-note" data-action="note" placeholder="Note" value="${escapeHtml(task.note || '')}" />
+
+                note
               </div>
+
               <div class="task-actions">
-                <button type="button" data-action="prev" title="Previous phase">‹</button>
-                <button type="button" data-action="next" title="Next phase">›</button>
-                <button type="button" class="danger" data-action="delete" title="Delete">×</button>
+                prev‹</button>
+                next›</button>
+                delete×</button>
               </div>
             </div>
           </article>
@@ -564,21 +617,29 @@
 
     addForm.addEventListener('submit', event => {
       event.preventDefault();
-      const title = titleInput.value.trim();
-      if (!title) return;
 
-      tasks = [{
-        id: uid(),
-        title,
-        note: noteInput.value.trim(),
-        phase: phaseInput.value,
-        done: false,
-        createdAt: new Date().toISOString()
-      }, ...tasks];
+      const title = titleInput.value.trim();
+
+      if (!title) {
+        return;
+      }
+
+      tasks = [
+        {
+          id: uid(),
+          title,
+          note: noteInput.value.trim(),
+          phase: phaseInput.value,
+          done: false,
+          createdAt: new Date().toISOString()
+        },
+        ...tasks
+      ];
 
       titleInput.value = '';
       noteInput.value = '';
       phaseInput.value = 'registration';
+
       save();
       render();
       titleInput.focus();
@@ -586,20 +647,20 @@
 
     phaseBar.addEventListener('click', event => {
       const btn = event.target.closest('[data-phase]');
-      if (!btn) return;
+
+      if (!btn) {
+        return;
+      }
+
       const selected = btn.dataset.phase;
       filter = filter === selected ? 'all' : selected;
+
       render();
     });
 
     allBtn.addEventListener('click', () => {
       filter = 'all';
       render();
-    });
-
-    searchInput.addEventListener('input', () => {
-      query = searchInput.value;
-      renderTasks();
     });
 
     showDoneInput.addEventListener('change', () => {
@@ -610,16 +671,32 @@
     taskList.addEventListener('click', event => {
       const actionEl = event.target.closest('[data-action]');
       const taskEl = event.target.closest('[data-id]');
-      if (!actionEl || !taskEl) return;
+
+      if (!actionEl || !taskEl) {
+        return;
+      }
 
       const id = taskEl.dataset.id;
       const task = tasks.find(t => t.id === id);
-      if (!task) return;
+
+      if (!task) {
+        return;
+      }
 
       const action = actionEl.dataset.action;
-      if (action === 'toggle') updateTask(id, { done: !task.done });
-      if (action === 'prev') updateTask(id, { phase: prevPhase(task.phase) });
-      if (action === 'next') updateTask(id, { phase: nextPhase(task.phase) });
+
+      if (action === 'toggle') {
+        updateTask(id, { done: !task.done });
+      }
+
+      if (action === 'prev') {
+        updateTask(id, { phase: prevPhase(task.phase) });
+      }
+
+      if (action === 'next') {
+        updateTask(id, { phase: nextPhase(task.phase) });
+      }
+
       if (action === 'delete') {
         tasks = tasks.filter(t => t.id !== id);
         save();
@@ -630,11 +707,20 @@
     taskList.addEventListener('input', event => {
       const input = event.target;
       const taskEl = input.closest('[data-id]');
-      if (!taskEl) return;
+
+      if (!taskEl) {
+        return;
+      }
 
       const id = taskEl.dataset.id;
-      if (input.dataset.action === 'title') updateTask(id, { title: input.value });
-      if (input.dataset.action === 'note') updateTask(id, { note: input.value });
+
+      if (input.dataset.action === 'title') {
+        updateTask(id, { title: input.value });
+      }
+
+      if (input.dataset.action === 'note') {
+        updateTask(id, { note: input.value });
+      }
     });
 
     exportBtn.addEventListener('click', () => {
@@ -644,25 +730,35 @@
         exportedAt: new Date().toISOString(),
         tasks
       };
+
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
+
       a.href = url;
       a.download = 'staircase-backup.json';
       a.click();
+
       URL.revokeObjectURL(url);
     });
 
     importFile.addEventListener('change', event => {
       const file = event.target.files[0];
-      if (!file) return;
+
+      if (!file) {
+        return;
+      }
 
       const reader = new FileReader();
+
       reader.onload = () => {
         try {
           const parsed = JSON.parse(String(reader.result));
           const incoming = Array.isArray(parsed) ? parsed : parsed.tasks;
-          if (!Array.isArray(incoming)) throw new Error('Invalid file');
+
+          if (!Array.isArray(incoming)) {
+            throw new Error('Invalid file');
+          }
 
           tasks = incoming.map(t => ({
             id: t.id || uid(),
@@ -679,18 +775,21 @@
           alert('Import failed. Please select a valid STAIRCASE backup JSON file.');
         }
       };
+
       reader.readAsText(file);
       event.target.value = '';
     });
 
     resetBtn.addEventListener('click', () => {
-      if (!confirm('Reset to sample tasks? This will replace current local data.')) return;
+      if (!confirm('Reset to sample tasks? This will replace current local data.')) {
+        return;
+      }
+
       tasks = sampleTasks();
       filter = 'all';
-      query = '';
       showDone = true;
-      searchInput.value = '';
       showDoneInput.checked = true;
+
       save();
       render();
     });

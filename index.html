@@ -141,6 +141,22 @@
       catch { tasks = sampleTasks(); }
       save();
     }
+    function focusTaskInput(){
+      setTimeout(() => titleInput.focus(), 0);
+    }
+    function addTask(){
+      const title = titleInput.value.trim();
+      if (!title) {
+        focusTaskInput();
+        return;
+      }
+      tasks = [{ id:uid(), title:title, note:noteInput.value.trim(), phase:'registration', done:false, createdAt:new Date().toISOString() }, ...tasks];
+      titleInput.value = '';
+      noteInput.value = '';
+      save();
+      render();
+      focusTaskInput();
+    }
     function renderPhases(){
       phaseBar.innerHTML = PHASES.map(p => {
         const count = tasks.filter(t => t.phase === p.key && !t.done).length;
@@ -172,19 +188,23 @@
 
     addForm.addEventListener('submit', e => {
       e.preventDefault();
-      const title = titleInput.value.trim();
-      if (!title) return;
-      tasks = [{ id:uid(), title:title, note:noteInput.value.trim(), phase:'registration', done:false, createdAt:new Date().toISOString() }, ...tasks];
-      titleInput.value = ''; noteInput.value = ''; save(); render(); titleInput.focus();
+      addTask();
+    });
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        addTask();
+      }
     });
     phaseBar.addEventListener('click', e => {
       const btn = e.target.closest('[data-phasekey]');
       if (!btn) return;
       filter = filter === btn.dataset.phasekey ? 'all' : btn.dataset.phasekey;
       render();
+      focusTaskInput();
     });
-    allBtn.addEventListener('click', () => { filter = 'all'; render(); });
-    showDoneInput.addEventListener('change', () => { showDone = showDoneInput.checked; renderTasks(); });
+    allBtn.addEventListener('click', () => { filter = 'all'; render(); focusTaskInput(); });
+    showDoneInput.addEventListener('change', () => { showDone = showDoneInput.checked; renderTasks(); focusTaskInput(); });
     taskList.addEventListener('click', e => {
       const item = e.target.closest('[data-id]');
       if (!item) return;
@@ -210,10 +230,11 @@
       save();
     });
     exportBtn.addEventListener('click', () => {
-      const payload = { app:'STAIRCASE', version:'1.3', exportedAt:new Date().toISOString(), tasks:tasks };
+      const payload = { app:'STAIRCASE', version:'1.4', exportedAt:new Date().toISOString(), tasks:tasks };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = 'staircase-backup.json'; a.click(); URL.revokeObjectURL(url);
+      focusTaskInput();
     });
     importFile.addEventListener('change', e => {
       const file = e.target.files[0]; if (!file) return;
@@ -224,17 +245,17 @@
           const incoming = Array.isArray(parsed) ? parsed : parsed.tasks;
           if (!Array.isArray(incoming)) throw new Error('Invalid file');
           tasks = incoming.map(t => ({ id:t.id || uid(), title:t.title || '', note:t.note || '', phase:phaseMeta(t.phase).key, done:Boolean(t.done), createdAt:t.createdAt || new Date().toISOString() }));
-          save(); render();
+          save(); render(); focusTaskInput();
         } catch { alert('Import failed. Please select a valid STAIRCASE backup JSON file.'); }
       };
       reader.readAsText(file); e.target.value = '';
     });
     resetBtn.addEventListener('click', () => {
       if (!confirm('Reset to sample tasks? This will replace current local data.')) return;
-      tasks = sampleTasks(); filter = 'all'; showDone = true; showDoneInput.checked = true; save(); render();
+      tasks = sampleTasks(); filter = 'all'; showDone = true; showDoneInput.checked = true; save(); render(); focusTaskInput();
     });
 
-    load(); render();
+    load(); render(); focusTaskInput();
   </script>
 </body>
 </html>

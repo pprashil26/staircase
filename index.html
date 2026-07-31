@@ -49,9 +49,11 @@
     .task{background:#fff;border:1px solid var(--line);border-radius:16px;padding:8px;box-shadow:var(--shadow)}
     .task.done{opacity:.55}
     .task.dragging{opacity:.35;outline:2px dashed #a1a1aa}
-    .task.drop-target{outline:2px solid #71717a;outline-offset:1px}
+    .task.drop-before{border-top:3px solid #18181b}
+    .task.drop-after{border-bottom:3px solid #18181b}
     .task-main{display:grid;grid-template-columns:auto auto 1fr auto;gap:8px;align-items:start}
-    .drag-handle{display:inline-flex;align-items:center;justify-content:center;width:18px;height:22px;margin-top:0;color:#a1a1aa;cursor:grab;user-select:none;font-size:15px;line-height:1}
+    .drag-handle{display:inline-flex;align-items:center;justify-content:center;width:20px;height:24px;margin-top:0;color:#71717a;cursor:grab;user-select:none;font-size:16px;line-height:1;border-radius:7px}
+    .drag-handle:hover{background:#f4f4f5;color:#18181b}
     .drag-handle:active{cursor:grabbing}
     .done-check{width:18px;height:18px;margin-top:2px;cursor:pointer;accent-color:#18181b}
     .task-title-row{display:flex;align-items:center;gap:6px;min-width:0}
@@ -113,6 +115,7 @@
     let filter = 'all';
     let showDone = true;
     let draggedTaskId = null;
+    let dropPosition = 'before';
 
     const phaseBar = document.getElementById('phaseBar');
     const addForm = document.getElementById('addForm');
@@ -173,9 +176,9 @@
       if (!visible.length){ taskList.innerHTML = '<div class="empty">No tasks found. Capture one item and move it through RCASE.</div>'; return; }
       taskList.innerHTML = visible.map(task => {
         const p = phaseMeta(task.phase);
-        return '<article class="task ' + (task.done ? 'done' : '') + '" data-id="' + task.id + '" draggable="true">' +
+        return '<article class="task ' + (task.done ? 'done' : '') + '" data-id="' + task.id + '">' +
           '<div class="task-main">' +
-          '<span class="drag-handle" title="Drag to reorder">&#8942;&#8942;</span>' +
+          '<span class="drag-handle" draggable="true" title="Drag to reorder">&#8942;&#8942;</span>' +
           '<input class="done-check js-done" type="checkbox" ' + (task.done ? 'checked' : '') + '>' +
           '<div><div class="task-title-row"><span class="tag ' + p.key + '">' + p.short + '</span>' +
           '<input class="task-title js-title" value="' + escapeHtml(task.title) + '"></div>' +
@@ -186,12 +189,17 @@
     }
     function render(){ renderPhases(); renderTasks(); }
     function updateTask(id, patch){ tasks = tasks.map(t => t.id === id ? Object.assign({}, t, patch) : t); save(); render(); }
-    function reorderTasks(dragId, dropId){
+    function clearDropStyles(){
+      document.querySelectorAll('.dragging,.drop-before,.drop-after').forEach(el => el.classList.remove('dragging','drop-before','drop-after'));
+    }
+    function reorderTasks(dragId, dropId, position){
       if (!dragId || !dropId || dragId === dropId) return;
       const fromIndex = tasks.findIndex(t => t.id === dragId);
-      const toIndex = tasks.findIndex(t => t.id === dropId);
+      let toIndex = tasks.findIndex(t => t.id === dropId);
       if (fromIndex < 0 || toIndex < 0) return;
       const moved = tasks.splice(fromIndex, 1)[0];
+      if (fromIndex < toIndex) toIndex = toIndex - 1;
+      if (position === 'after') toIndex = toIndex + 1;
       tasks.splice(toIndex, 0, moved);
       save();
       render();
@@ -235,8 +243,9 @@
       save();
     });
     taskList.addEventListener('dragstart', e => {
+      const handle = e.target.closest('.drag-handle');
       const item = e.target.closest('[data-id]');
-      if (!item || !e.target.closest('.drag-handle')) { e.preventDefault(); return; }
+      if (!handle || !item) return;
       draggedTaskId = item.dataset.id;
       item.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
@@ -246,25 +255,29 @@
       const item = e.target.closest('[data-id]');
       if (!item || !draggedTaskId || item.dataset.id === draggedTaskId) return;
       e.preventDefault();
-      item.classList.add('drop-target');
-    });
-    taskList.addEventListener('dragleave', e => {
-      const item = e.target.closest('[data-id]');
-      if (item) item.classList.remove('drop-target');
+      clearDropStyles();
+      const rect = item.getBoundingClientRect();
+      const halfway = rect.top + rect.height / 2;
+      dropPosition = e.clientY > halfway ? 'after' : 'before';
+      item.classList.add(dropPosition === 'after' ? 'drop-after' : 'drop-before');
+      e.dataTransfer.dropEffect = 'move';
     });
     taskList.addEventListener('drop', e => {
       const item = e.target.closest('[data-id]');
       if (!item || !draggedTaskId) return;
       e.preventDefault();
-      reorderTasks(draggedTaskId, item.dataset.id);
+      const targetId = item.dataset.id;
+      reorderTasks(draggedTaskId, targetId, dropPosition);
       draggedTaskId = null;
+      clearDropStyles();
+      focusTaskInput();
     });
     taskList.addEventListener('dragend', () => {
       draggedTaskId = null;
-      document.querySelectorAll('.dragging,.drop-target').forEach(el => el.classList.remove('dragging','drop-target'));
+      clearDropStyles();
     });
     exportBtn.addEventListener('click', () => {
-      const payload = { app:'STAIRCASE', version:'1.5', exportedAt:new Date().toISOString(), tasks:tasks };
+      const payload = { app:'STAIRCASE', version:'1.6', exportedAt:new Date().toISOString(), tasks:tasks };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = 'staircase-backup.json'; a.click(); URL.revokeObjectURL(url);

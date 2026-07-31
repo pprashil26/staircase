@@ -18,10 +18,16 @@
     h1{margin:0;font-size:24px;line-height:1.1;letter-spacing:-.03em}
     .sub{margin-top:2px;color:var(--muted);font-size:12px}
     .toolbar,.filters,.task-actions,.phase-head{display:flex;align-items:center;gap:6px}
-    .toolbar{flex-wrap:wrap;justify-content:flex-start}
+    .toolbar{flex-wrap:wrap;justify-content:flex-start;gap:4px 10px;font-size:12px;color:var(--muted)}
     button,.file-label,input{font:inherit}
     button,.file-label{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:9px;padding:6px 9px;cursor:pointer;box-shadow:var(--shadow);line-height:1;white-space:nowrap;text-decoration:none}
     button:hover,.file-label:hover{background:#f4f4f5}
+    .toolbar button,.toolbar .file-label{border:0;background:transparent;box-shadow:none;border-radius:0;padding:0;color:var(--muted);font-size:12px;line-height:1.4;text-decoration:none}
+    .toolbar button:hover,.toolbar .file-label:hover{background:transparent;color:var(--text);text-decoration:underline}
+    .toolbar .check-label{border:0;background:transparent;box-shadow:none;border-radius:0;padding:0;color:var(--muted);font-size:12px;line-height:1.4}
+    .toolbar .check-label:hover{color:var(--text)}
+    .toolbar .check-label input{width:auto;margin:0;accent-color:#18181b}
+    .toolbar #allBtn.primary{background:transparent;color:var(--text);border:0;box-shadow:none;font-weight:700;text-decoration:underline}
     .primary{background:var(--black);color:#fff;border-color:var(--black)}
     .primary:hover{background:#3f3f46}
     #addTaskBtn{padding:10px 18px;font-weight:700;border-radius:12px;min-width:110px}
@@ -277,7 +283,7 @@
       clearDropStyles();
     });
     exportBtn.addEventListener('click', () => {
-      const payload = { app:'STAIRCASE', version:'1.7', exportedAt:new Date().toISOString(), tasks:tasks };
+      const payload = { app:'STAIRCASE', version:'1.8', exportedAt:new Date().toISOString(), tasks:tasks };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = 'staircase-backup.json'; a.click(); URL.revokeObjectURL(url);
